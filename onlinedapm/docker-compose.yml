@@ -14,6 +14,15 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    depends_on:
+      - zookeeper
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "9092" ]
+      interval: 10s
+      retries: 5
+      timeout:
+        5s
+    restart: always
 
   ingestion-service:
     build:
@@ -23,6 +32,7 @@ services:
       - "8080:8080"
     depends_on:
       - kafka
+    restart: always
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
   client-frontend:
