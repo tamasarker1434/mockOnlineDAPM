@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Box } from "@mui/material";
+import { Box, Drawer } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { useLocation } from "react-router-dom";
 import PipelineDesignerSidebar from "../components/PipelineDesignerSidebar";
@@ -7,6 +7,7 @@ import PipelineEditor from "../components/PipelineEditor";
 import PipelineDesignerTopBar from "../components/PipelineDesignerTopBar";
 import { savePipeline } from "../store";
 import { toPng } from "html-to-image";
+import SourceNodeSidebar from "../components/SourceNodeSidebar";
 
 const useQuery = () => {
     return new URLSearchParams(useLocation().search);
@@ -22,37 +23,7 @@ const PipelineDesigner = () => {
     const [pipelineName, setPipelineName] = useState("New Pipeline");
     const [nodes, setNodes] = useState([]);
     const [edges, setEdges] = useState([]);
-    const [isLoaded, setIsLoaded] = useState(false); // Prevent multiple overwrites
-
-    // Load saved pipeline when component mounts
-    useEffect(() => {
-        if (pipelineIndex !== null && savedPipelines[pipelineIndex] && !isLoaded) {
-            const pipeline = savedPipelines[pipelineIndex];
-            setPipelineName(pipeline.name || "New Pipeline");
-            setNodes([...pipeline.nodes]); // Load saved nodes
-            setEdges([...pipeline.edges]); // Load saved edges
-            setIsLoaded(true);
-        }
-    }, [pipelineIndex, savedPipelines, isLoaded]);
-
-    const handleSave = () => {
-        if (editorRef.current) {
-            toPng(editorRef.current)
-                .then((dataUrl) => {
-                    const pipelineData = {
-                        id: pipelineIndex !== null ? Number(pipelineIndex) : savedPipelines.length,
-                        name: pipelineName,
-                        nodes: [...nodes],  // Save the current nodes
-                        edges: [...edges],  // Save the current edges
-                        image: dataUrl,
-                    };
-
-                    dispatch(savePipeline(pipelineData)); // Update the pipeline in Redux
-                    alert("Pipeline saved successfully!");
-                })
-                .catch((error) => console.error("Error capturing pipeline preview:", error));
-        }
-    };
+    const [selectedNode, setSelectedNode] = useState(null);
 
     return (
         <Box sx={{ display: "flex", height: "100vh" }}>
@@ -63,12 +34,22 @@ const PipelineDesigner = () => {
                     setPipelineName={setPipelineName}
                     nodes={nodes}
                     edges={edges}
-                    onSave={handleSave}
                 />
                 <Box ref={editorRef}>
-                    <PipelineEditor nodes={nodes} setNodes={setNodes} edges={edges} setEdges={setEdges} />
+                    <PipelineEditor
+                        onNodeSelect={setSelectedNode} // Handle node selection
+                    />
                 </Box>
             </Box>
+
+            {/* Right Sidebar for Source Node Configuration */}
+            <Drawer
+                anchor="right"
+                open={selectedNode?.type === "source"}
+                onClose={() => setSelectedNode(null)}
+            >
+                <SourceNodeSidebar node={selectedNode} onClose={() => setSelectedNode(null)} />
+            </Drawer>
         </Box>
     );
 };
