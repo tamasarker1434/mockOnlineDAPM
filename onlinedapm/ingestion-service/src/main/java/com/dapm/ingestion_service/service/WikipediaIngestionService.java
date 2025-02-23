@@ -1,5 +1,3 @@
-// Fixed logging error and improved WikipediaIngestionService.java
-
 package com.dapm.ingestion_service.service;
 
 import org.slf4j.Logger;
@@ -14,13 +12,15 @@ import java.time.Duration;
 public class WikipediaIngestionService {
 
     private static final Logger logger = LoggerFactory.getLogger(WikipediaIngestionService.class);
-    private final WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
 
     public WikipediaIngestionService(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("https://stream.wikimedia.org/v2/stream/recentchange").build();
+        this.webClientBuilder = webClientBuilder;
     }
 
-    public void startIngestion(KafkaProducerService producerService) {
+    public void startIngestion(KafkaProducerService producerService, String wikiUrl) {
+        WebClient webClient = webClientBuilder.baseUrl(wikiUrl).build();
+
         webClient.get()
                 .retrieve()
                 .bodyToFlux(String.class)
@@ -38,5 +38,3 @@ public class WikipediaIngestionService {
                 .subscribe();
     }
 }
-
-// Adjusted logger to avoid UnknownFormatConversionException by ensuring proper use of placeholders and added `onErrorContinue` to handle unexpected errors gracefully.
