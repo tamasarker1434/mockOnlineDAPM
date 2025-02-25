@@ -4,22 +4,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
 import reactor.util.retry.Retry;
 import java.time.Duration;
 
 @Service
-public class WikipediaIngestionService {
+public class StreamIngestionService {
 
-    private static final Logger logger = LoggerFactory.getLogger(WikipediaIngestionService.class);
+    private static final Logger logger = LoggerFactory.getLogger(StreamIngestionService.class);
     private final WebClient.Builder webClientBuilder;
 
-    public WikipediaIngestionService(WebClient.Builder webClientBuilder) {
+    public StreamIngestionService(WebClient.Builder webClientBuilder) {
         this.webClientBuilder = webClientBuilder;
     }
 
-    public void startIngestion(KafkaProducerService producerService, String wikiUrl) {
-        WebClient webClient = webClientBuilder.baseUrl(wikiUrl).build();
+    public void startIngestion(KafkaProducerService producerService, String sourceUrl) {
+        WebClient webClient = webClientBuilder.baseUrl(sourceUrl).build();
 
         webClient.get()
                 .retrieve()

@@ -7,7 +7,7 @@ const AppRoutes = () => {
     return (
         <Router>
             <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={<PipelineDesigner />} />
                 <Route path="/pipeline-designer" element={<PipelineDesigner />} />
             </Routes>
         </Router>

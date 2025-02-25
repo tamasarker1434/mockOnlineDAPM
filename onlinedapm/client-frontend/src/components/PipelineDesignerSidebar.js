@@ -1,29 +1,53 @@
 import React from "react";
 import { Box, Typography, Paper } from "@mui/material";
+import { sourceNodeTitle, sourceNodeID, attributeSettingNodeTitle,attributeSettingNodeID,
+    filteringNodeID,filteringNodeTitle,processMiningNodeID,processMiningNodeTitle,sinkNodeID,sinkNodeTitle }
+    from "../globalConstantFile";
+
+const nodeTypes = [
+    { id: sourceNodeID, label: sourceNodeTitle },
+    { id: attributeSettingNodeID, label: attributeSettingNodeTitle },
+    { id: filteringNodeID, label: filteringNodeTitle },
+    { id: processMiningNodeID, label: processMiningNodeTitle },
+    { id: sinkNodeID, label: sinkNodeTitle }
+];
 
 const PipelineDesignerSidebar = () => {
-    const handleDragStart = (event, nodeType) => {
+    const onDragStart = (event, nodeType) => {
         event.dataTransfer.setData("application/reactflow", nodeType);
         event.dataTransfer.effectAllowed = "move";
     };
 
     return (
-        <Box sx={{ width: "200px", padding: "20px", borderRight: "2px solid #ddd", bgcolor: "black", color: "white" }}>
-            <Typography variant="h6">Nodes</Typography>
-            <Paper
-                draggable
-                onDragStart={(e) => handleDragStart(e, "source")}
-                sx={{ padding: "10px", marginTop: "10px", cursor: "grab", bgcolor: "#333", color: "white" }}
-            >
-                Source Node
-            </Paper>
-            <Paper
-                draggable
-                onDragStart={(e) => handleDragStart(e, "transformation")}
-                sx={{ padding: "10px", marginTop: "10px", cursor: "grab", bgcolor: "#333", color: "white" }}
-            >
-                Transformation Node
-            </Paper>
+        <Box
+            sx={{
+                width: 200,
+                height: "100vh",
+                backgroundColor: "#282c34",
+                padding: 2,
+                color: "white",
+            }}
+        >
+            <Typography variant="h6" sx={{ marginBottom: 2 }}>
+                Nodes
+            </Typography>
+
+            {nodeTypes.map((node) => (
+                <Paper
+                    key={node.id}
+                    sx={{
+                        padding: 1,
+                        marginBottom: 1,
+                        textAlign: "center",
+                        backgroundColor: "#3b3f46",
+                        cursor: "grab",
+                    }}
+                    draggable
+                    onDragStart={(event) => onDragStart(event, node.id)}
+                >
+                    {node.label}
+                </Paper>
+            ))}
         </Box>
     );
 };

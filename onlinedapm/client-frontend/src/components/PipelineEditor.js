@@ -9,7 +9,13 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import { Drawer } from "@mui/material";
 import SourceNodeSidebar from "../components/SourceNodeSidebar";
+import AttributeSettingSidebar from "../components/AttributeSettingSidebar"; // Import new sidebar
+import {
+    sourceNodeTitle, sourceNodeID, attributeSettingNodeTitle, attributeSettingNodeID,
+    filteringNodeID, filteringNodeTitle, processMiningNodeID, processMiningNodeTitle, sinkNodeID, sinkNodeTitle
+} from "../globalConstantFile";
 
+// Source Node Component
 const SourceNode = ({ data, selected }) => (
     <div
         style={{
@@ -23,18 +29,100 @@ const SourceNode = ({ data, selected }) => (
         }}
     >
         <Handle type="source" position={Position.Right} style={{ background: "#fff" }} />
-        {data.label || "Source Node"}
+        {data.label || sourceNodeTitle}
     </div>
 );
 
+// Attribute Setting Node Component
+const AttributeSettingNode = ({ data, selected }) => (
+    <div
+        style={{
+            padding: 10,
+            borderRadius: 5,
+            background: selected ? "#f57c00" : "#ef6c00",
+            color: "white",
+            textAlign: "center",
+            position: "relative",
+            border: selected ? "2px solid white" : "none",
+        }}
+    >
+        <Handle type="target" position={Position.Left} style={{ background: "#fff" }} />
+        {data.label || attributeSettingNodeTitle}
+        <Handle type="source" position={Position.Right} style={{ background: "#fff" }} />
+    </div>
+);
+
+// Filtering Node Component
+const FilteringNode = ({ data, selected }) => (
+    <div
+        style={{
+            padding: 10,
+            borderRadius: 5,
+            background: selected ? "#43a047" : "#388e3c",
+            color: "white",
+            textAlign: "center",
+            position: "relative",
+            border: selected ? "2px solid white" : "none",
+        }}
+    >
+        <Handle type="target" position={Position.Left} style={{ background: "#fff" }} />
+        {data.label || filteringNodeTitle}
+        <Handle type="source" position={Position.Right} style={{ background: "#fff" }} />
+    </div>
+);
+
+// Process Mining Node Component
+const ProcessMiningNode = ({ data, selected }) => (
+    <div
+        style={{
+            padding: 10,
+            borderRadius: 5,
+            background: selected ? "#d21919" : "#d21919",
+            color: "white",
+            textAlign: "center",
+            position: "relative",
+            border: selected ? "2px solid white" : "none",
+        }}
+    >
+        <Handle type="target" position={Position.Left} style={{ background: "#fff" }} />
+        {data.label || processMiningNodeTitle}
+        <Handle type="source" position={Position.Right} style={{ background: "#fff" }} />
+    </div>
+);
+
+// Sink Node Component
+const SinkNode = ({ data, selected }) => (
+    <div
+        style={{
+            padding: 10,
+            borderRadius: 5,
+            background: selected ? "#8e24aa" : "#7b1fa2",
+            color: "white",
+            textAlign: "center",
+            position: "relative",
+            border: selected ? "2px solid white" : "none",
+        }}
+    >
+        <Handle type="target" position={Position.Left} style={{ background: "#fff" }} />
+        {data.label || sinkNodeTitle}
+    </div>
+);
+
+// Node Types Configuration
 const nodeTypes = {
     source: SourceNode,
+    attributeSetting: AttributeSettingNode,
+    filtering: FilteringNode,
+    processMining: ProcessMiningNode,
+    sink: SinkNode,
 };
 
 const PipelineEditor = () => {
     const [nodes, setNodes, onNodesChange] = useNodesState([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState([]);
     const [selectedNode, setSelectedNode] = useState(null);
+    const [sourceSidebarOpen, setSourceSidebarOpen] = useState(false);
+    const [attributeSidebarOpen, setAttributeSidebarOpen] = useState(false);
 
     const onDrop = (event) => {
         event.preventDefault();
@@ -42,22 +130,41 @@ const PipelineEditor = () => {
         if (!nodeType) return;
 
         const position = { x: event.clientX - 250, y: event.clientY - 100 };
+
         const newNode = {
             id: `${nodes.length + 1}`,
             type: nodeType,
             position,
-            data: { label: "Source Node", url: "" },
+            data: {
+                label: getNodeLabel(nodeType),
+                url: ""
+            },
         };
 
         setNodes((nds) => [...nds, newNode]);
     };
 
-    const updateNodeData = (nodeId, newData) => {
-        setNodes((nds) =>
-            nds.map((node) =>
-                node.id === nodeId ? { ...node, data: { ...node.data, ...newData } } : node
-            )
-        );
+    const getNodeLabel = (nodeType) => {
+        switch (nodeType) {
+            case sourceNodeID: return sourceNodeTitle;
+            case attributeSettingNodeID: return attributeSettingNodeTitle;
+            case filteringNodeID: return filteringNodeTitle;
+            case processMiningNodeID: return processMiningNodeTitle;
+            case sinkNodeID: return sinkNodeTitle;
+            default: return "Unknown Node";
+        }
+    };
+
+    const onNodeClick = (event, node) => {
+        setSelectedNode(node);
+
+        if (node.type === "source") {
+            setSourceSidebarOpen(true);
+            setAttributeSidebarOpen(false);
+        } else if (node.type === "attributeSetting") {
+            setAttributeSidebarOpen(true);
+            setSourceSidebarOpen(false);
+        }
     };
 
     return (
@@ -74,22 +181,27 @@ const PipelineEditor = () => {
                     onEdgesChange={onEdgesChange}
                     onConnect={(params) => setEdges((eds) => addEdge(params, eds))}
                     nodeTypes={nodeTypes}
-                    onNodeClick={(event, node) => setSelectedNode(node)}
+                    onNodeClick={onNodeClick} // Open respective sidebar
                     fitView
                 />
             </div>
 
-            {/* Right Sidebar for Source Node Configuration */}
+            {/* Source Node Sidebar */}
             <Drawer
                 anchor="right"
-                open={selectedNode?.type === "source"}
-                onClose={() => setSelectedNode(null)}
+                open={sourceSidebarOpen}
+                onClose={() => setSourceSidebarOpen(false)}
             >
-                <SourceNodeSidebar
-                    node={selectedNode}
-                    onClose={() => setSelectedNode(null)}
-                    updateNodeData={updateNodeData}
-                />
+                <SourceNodeSidebar node={selectedNode} onClose={() => setSourceSidebarOpen(false)} />
+            </Drawer>
+
+            {/* Attribute Setting Node Sidebar */}
+            <Drawer
+                anchor="right"
+                open={attributeSidebarOpen}
+                onClose={() => setAttributeSidebarOpen(false)}
+            >
+                <AttributeSettingSidebar node={selectedNode} onClose={() => setAttributeSidebarOpen(false)} />
             </Drawer>
         </>
     );
