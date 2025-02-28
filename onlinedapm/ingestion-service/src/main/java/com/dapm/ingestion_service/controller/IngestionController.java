@@ -11,11 +11,9 @@ import java.util.Map;
 public class IngestionController {
 
     private final StreamIngestionService ingestionService;
-    private final KafkaProducerService producerService;
 
     public IngestionController(StreamIngestionService ingestionService, KafkaProducerService producerService) {
         this.ingestionService = ingestionService;
-        this.producerService = producerService;
     }
 
     @PostMapping("/start-ingestion")  // Changed from GET to POST to accept request body
@@ -26,7 +24,7 @@ public class IngestionController {
             return ResponseEntity.badRequest().body("Error: Wikipedia URL is required.");
         }
 
-        ingestionService.startIngestion(producerService, sourceUrl);
+        ingestionService.startIngestion(sourceUrl);
         return ResponseEntity.ok("Ingestion started for URL: " + sourceUrl);
     }
 }

@@ -1,29 +1,29 @@
 import React from "react";
-import { Box, Typography, Select, MenuItem, TextField, Button } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
+import RealtimeTable from "./RealtimeTable"; // Adjust the path as needed
 
 const AttributeSettingSidebar = ({ node, onClose }) => {
     if (!node) return null;
 
     return (
         <Box sx={{ width: 300, p: 2 }}>
-            <Typography variant="h6">Attribute Setting</Typography>
-
-            {/* Attribute Selection */}
-            <Typography variant="body2" sx={{ mt: 2 }}>Select Attribute Type</Typography>
-            <Select fullWidth sx={{ mt: 1 }}>
-                <MenuItem value="case_id">Case ID</MenuItem>
-                <MenuItem value="activity">Activity</MenuItem>
-                <MenuItem value="timestamp">Timestamp</MenuItem>
-            </Select>
-
-            {/* Additional Metadata */}
-            <Typography variant="body2" sx={{ mt: 2 }}>Additional Metadata (Optional)</Typography>
-            <TextField fullWidth placeholder="Enter metadata..." sx={{ mt: 1 }} />
-
-            {/* Done Button */}
-            <Button variant="contained" fullWidth sx={{ mt: 3 }} onClick={onClose}>
-                Done
-            </Button>
+            {/* Header: Title on left; realtime table and Save button on right */}
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Typography variant="h6">
+                    Attribute Setting for process mining
+                </Typography>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                    {/* Realtime data table can be scaled as needed */}
+                    <RealtimeTable />
+                    <Button variant="contained" sx={{ ml: 1 }} onClick={onClose}>
+                        Save
+                    </Button>
+                </Box>
+            </Box>
+            {/*
+          Optionally, you can add further content below the header
+          or remove the below section if only the header is needed.
+      */}
         </Box>
     );
 };

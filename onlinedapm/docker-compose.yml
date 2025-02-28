@@ -3,15 +3,19 @@ version: '3.8'
 services:
   zookeeper:
     image: wurstmeister/zookeeper
+    container_name: zookeeper
     ports:
       - "2181:2181"
+    networks:
+      - dapm_network
 
   kafka:
     image: wurstmeister/kafka
+    container_name: kafka
     ports:
       - "9092:9092"
     environment:
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     depends_on:
@@ -20,26 +24,59 @@ services:
       test: [ "CMD", "nc", "-z", "localhost", "9092" ]
       interval: 10s
       retries: 5
-      timeout:
-        5s
+      timeout: 5s
+    restart: unless-stopped
+    networks:
+      - dapm_network
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+  mongo:
+    image: mongo:latest
+    container_name: mongodb
     restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - dapm_network
+    volumes:
+      - mongo_data:/data/db
 
   ingestion-service:
     build:
       context: ./ingestion-service
       dockerfile: Dockerfile
+    container_name: ingestion-service
     ports:
       - "8080:8080"
     depends_on:
       - kafka
-    restart: always
+      - mongo  # Ensures MongoDB is started before ingestion-service
+    restart: unless-stopped
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/dapm_db  # Corrected MongoDB URI
+    networks:
+      - dapm_network
+
   client-frontend:
     build:
       context: ./client-frontend
       dockerfile: Dockerfile
+    container_name: client-frontend
     ports:
       - "3000:3000"
     depends_on:
       - ingestion-service
+    networks:
+      - dapm_network
+
+networks:
+  dapm_network:
+    driver: bridge
+
+volumes:
+  kafka_data:
+    driver: local
+  mongo_data:
+    driver: local
