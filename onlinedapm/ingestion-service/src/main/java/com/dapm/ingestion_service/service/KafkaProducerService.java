@@ -26,8 +26,6 @@ public class KafkaProducerService {
             future.whenComplete((result, ex) -> {
                 if (ex != null) {
                     logger.error("Failed to send message [{}] to topic [{}]: {}", message, topic, ex.getMessage(), ex);
-                } else {
-                    logger.info("Message sent to topic [{}] with offset [{}]", topic, result.getRecordMetadata().offset());
                 }
             });
 

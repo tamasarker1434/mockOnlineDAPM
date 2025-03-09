@@ -41,7 +41,7 @@ public class StreamIngestionService {
                 .doOnError(error -> logger.error("Error in Wikipedia stream ingestion: ", error))
                 .doOnNext(event -> {
                     try {
-                        logger.info("Ingested event: {}", event);
+                        //logger.info("Ingested event: {}", event);
 
                         //Store dynamically in MongoDB
                         Map<String, Object> rawData = new HashMap<>();
