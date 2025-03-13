@@ -9,6 +9,7 @@
 
     <modules>
         <module>ingestion-service</module>
+        <module>demo</module>
     </modules>
 
     <dependencyManagement>

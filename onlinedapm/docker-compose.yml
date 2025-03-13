@@ -51,11 +51,11 @@ services:
       - "8080:8080"
     depends_on:
       - kafka
-      - mongo  # Ensures MongoDB is started before ingestion-service
+      - mongo
     restart: unless-stopped
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/dapm_db  # Corrected MongoDB URI
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/dapm_db
     networks:
       - dapm_network
 
@@ -68,6 +68,22 @@ services:
       - "3000:3000"
     depends_on:
       - ingestion-service
+    networks:
+      - dapm_network
+
+  # NEW DEMO SERVICE
+  demo-service:
+    build:
+      context: ./demo
+      dockerfile: Dockerfile
+    container_name: demo-service
+    ports:
+      - "8081:8080"  # Expose container's port 8080 on host port 8081
+    depends_on:
+      - kafka
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    restart: unless-stopped
     networks:
       - dapm_network
 
